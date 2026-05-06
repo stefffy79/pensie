@@ -1,0 +1,1638 @@
+<!doctype html>
+<html lang="ro">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Calculator Pensie IPC</title>
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap");
+
+      :root {
+        --red: #c0392b;
+        --red-light: #e74c3c;
+        --red-dark: #922b21;
+        --green: #1e8449;
+        --green-light: #27ae60;
+        --gold: #d4ac0d;
+        --blue: #1a5276;
+        --blue-light: #2980b9;
+        --bg: #f5f1eb;
+        --surface: #fffdf9;
+        --surface2: #f0ebe2;
+        --border: #d5ccc0;
+        --text: #1a1209;
+        --text2: #5c4a30;
+        --text3: #8a7560;
+        --shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+        --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.12);
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family: "DM Sans", sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        min-height: 100vh;
+        padding: 0;
+      }
+
+      header {
+        background: var(--red);
+        color: white;
+        padding: 20px 24px 16px;
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        box-shadow: 0 4px 20px rgba(192, 57, 43, 0.4);
+      }
+
+      header h1 {
+        font-size: clamp(1rem, 4vw, 1.35rem);
+        font-weight: 700;
+        letter-spacing: -0.01em;
+        line-height: 1.2;
+      }
+
+      header p {
+        font-size: 0.75rem;
+        opacity: 0.8;
+        margin-top: 4px;
+        font-weight: 300;
+      }
+
+      .container {
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 20px 12px 100px;
+      }
+
+      /* Controls panel */
+      .controls {
+        background: var(--surface);
+        border-radius: 16px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: var(--shadow);
+        border: 1px solid var(--border);
+      }
+
+      .controls h2 {
+        font-size: 0.85rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--text3);
+        margin-bottom: 16px;
+      }
+
+      .controls-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+      }
+
+      @media (max-width: 480px) {
+        .controls-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .field-group {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+
+      .field-group label {
+        font-size: 0.78rem;
+        font-weight: 600;
+        color: var(--text2);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+
+      .field-group input {
+        padding: 10px 14px;
+        border-radius: 10px;
+        border: 2px solid var(--border);
+        background: var(--bg);
+        font-family: "DM Mono", monospace;
+        font-size: 1rem;
+        font-weight: 500;
+        color: var(--text);
+        transition: border-color 0.2s;
+        width: 100%;
+      }
+
+      .field-group input:focus {
+        outline: none;
+        border-color: var(--red);
+        background: white;
+      }
+
+      .btn-calc {
+        width: 100%;
+        margin-top: 16px;
+        padding: 14px;
+        background: var(--red);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        font-family: "DM Sans", sans-serif;
+        font-size: 1rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition:
+          background 0.2s,
+          transform 0.1s;
+        letter-spacing: 0.01em;
+      }
+
+      .btn-calc:hover {
+        background: var(--red-dark);
+      }
+      .btn-calc:active {
+        transform: scale(0.98);
+      }
+
+      /* Profile panel */
+      .profile-panel {
+        background: var(--surface);
+        border-radius: 16px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: var(--shadow);
+        border: 1px solid var(--border);
+      }
+
+      .profile-panel h2 {
+        font-size: 0.85rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--text3);
+        margin-bottom: 14px;
+      }
+
+      .active-profile-bar {
+        font-size: 0.75rem;
+        color: var(--blue);
+        font-weight: 600;
+        background: rgba(41, 128, 185, 0.08);
+        border-radius: 8px;
+        padding: 7px 12px;
+        margin-bottom: 12px;
+        display: none;
+        border: 1px solid rgba(41, 128, 185, 0.2);
+      }
+      .active-profile-bar.visible {
+        display: block;
+      }
+
+      .profile-save-row {
+        display: flex;
+        gap: 10px;
+        align-items: stretch;
+        flex-wrap: wrap;
+      }
+
+      .profile-save-row input[type="text"] {
+        flex: 1;
+        min-width: 160px;
+        padding: 10px 14px;
+        border-radius: 10px;
+        border: 2px solid var(--border);
+        background: var(--bg);
+        font-family: "DM Sans", sans-serif;
+        font-size: 0.92rem;
+        color: var(--text);
+        transition: border-color 0.2s;
+      }
+
+      .profile-save-row input[type="text"]:focus {
+        outline: none;
+        border-color: var(--blue-light);
+        background: white;
+      }
+
+      .btn-profile {
+        padding: 10px 16px;
+        border-radius: 10px;
+        border: none;
+        font-family: "DM Sans", sans-serif;
+        font-size: 0.82rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition:
+          background 0.2s,
+          transform 0.1s;
+        white-space: nowrap;
+      }
+      .btn-profile:active {
+        transform: scale(0.97);
+      }
+
+      .btn-save {
+        background: var(--blue-light);
+        color: white;
+      }
+      .btn-save:hover {
+        background: var(--blue);
+      }
+
+      .btn-load {
+        background: var(--green);
+        color: white;
+      }
+      .btn-load:hover {
+        background: var(--green-light);
+      }
+
+      .btn-delete-profile {
+        background: var(--red-light);
+        color: white;
+      }
+      .btn-delete-profile:hover {
+        background: var(--red-dark);
+      }
+
+      .profile-divider {
+        border: none;
+        border-top: 1px solid var(--border);
+        margin: 14px 0;
+      }
+
+      .profile-load-row {
+        display: flex;
+        gap: 10px;
+        align-items: stretch;
+        flex-wrap: wrap;
+      }
+
+      .profile-load-row select {
+        flex: 1;
+        min-width: 160px;
+        padding: 10px 14px;
+        border-radius: 10px;
+        border: 2px solid var(--border);
+        background: var(--bg);
+        font-family: "DM Sans", sans-serif;
+        font-size: 0.88rem;
+        color: var(--text);
+        cursor: pointer;
+        transition: border-color 0.2s;
+        appearance: auto;
+      }
+
+      .profile-load-row select:focus {
+        outline: none;
+        border-color: var(--blue-light);
+        background: white;
+      }
+
+      .profile-status {
+        font-size: 0.75rem;
+        margin-top: 10px;
+        padding: 8px 12px;
+        border-radius: 8px;
+        display: none;
+        font-weight: 600;
+      }
+      .profile-status.ok {
+        display: block;
+        background: rgba(30, 132, 73, 0.1);
+        color: var(--green);
+      }
+      .profile-status.err {
+        display: block;
+        background: rgba(192, 57, 43, 0.1);
+        color: var(--red);
+      }
+      .profile-status.info {
+        display: block;
+        background: rgba(41, 128, 185, 0.1);
+        color: var(--blue);
+      }
+
+      /* Results panel */
+      .results {
+        display: none;
+        background: var(--surface);
+        border-radius: 16px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: var(--shadow-lg);
+        border: 2px solid var(--green);
+      }
+
+      .results.visible {
+        display: block;
+      }
+
+      .results h2 {
+        font-size: 0.85rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--green);
+        margin-bottom: 16px;
+      }
+
+      .result-steps {
+        display: grid;
+        gap: 12px;
+      }
+
+      .step-card {
+        background: var(--surface2);
+        border-radius: 12px;
+        padding: 14px 16px;
+        border-left: 4px solid var(--red);
+      }
+
+      .step-card.green {
+        border-left-color: var(--green);
+      }
+
+      .step-label {
+        font-size: 0.72rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--text3);
+        margin-bottom: 4px;
+      }
+
+      .step-value {
+        font-family: "DM Mono", monospace;
+        font-size: 1.3rem;
+        font-weight: 500;
+        color: var(--text);
+      }
+
+      .step-sub {
+        font-size: 0.75rem;
+        color: var(--text3);
+        margin-top: 3px;
+      }
+
+      .pensie-neta {
+        background: var(--green);
+        border-radius: 14px;
+        padding: 18px 20px;
+        text-align: center;
+        margin-top: 4px;
+      }
+
+      .pensie-neta .label {
+        font-size: 0.8rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: rgba(255, 255, 255, 0.7);
+        margin-bottom: 4px;
+      }
+
+      .pensie-neta .value {
+        font-family: "DM Mono", monospace;
+        font-size: 2rem;
+        font-weight: 700;
+        color: white;
+      }
+
+      .period-tag {
+        display: inline-block;
+        background: rgba(192, 57, 43, 0.12);
+        color: var(--red);
+        border-radius: 6px;
+        padding: 3px 8px;
+        font-size: 0.72rem;
+        font-weight: 600;
+        margin-top: 6px;
+      }
+
+      /* Table section */
+      .table-section {
+        background: var(--surface);
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: var(--shadow);
+        border: 1px solid var(--border);
+      }
+
+      .table-header {
+        background: var(--red);
+        color: white;
+        padding: 14px 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+
+      .table-header h2 {
+        font-size: 0.9rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+
+      .table-actions {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+
+      .btn-sm {
+        padding: 6px 12px;
+        border-radius: 8px;
+        border: 2px solid rgba(255, 255, 255, 0.4);
+        background: rgba(255, 255, 255, 0.1);
+        color: white;
+        font-family: "DM Sans", sans-serif;
+        font-size: 0.72rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.2s;
+        white-space: nowrap;
+      }
+      .btn-sm:hover {
+        background: rgba(255, 255, 255, 0.25);
+      }
+
+      .table-wrap {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 560px;
+      }
+
+      thead th {
+        background: var(--surface2);
+        padding: 10px 10px;
+        font-size: 0.68rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--text2);
+        border-bottom: 2px solid var(--border);
+        white-space: nowrap;
+        position: sticky;
+        top: 0;
+      }
+
+      /* Fixarea headerului "Luna" */
+      thead th:first-child {
+        text-align: left;
+        position: sticky;
+        left: 0;
+        z-index: 10; /* Mai mare decât restul th-urilor */
+        background: var(--surface2);
+        border-right: 1px solid var(--border); /* Linia subțire de demarcare */
+      }
+      thead th:not(:first-child) {
+        text-align: right;
+      }
+
+      /* Sub-header for IPC group */
+      thead tr.th-group th {
+        font-size: 0.62rem;
+        padding: 4px 10px 6px;
+        background: #e8e1d8;
+        color: var(--text3);
+        letter-spacing: 0.04em;
+        font-weight: 600;
+        border-bottom: 1px solid var(--border);
+      }
+
+      tbody tr {
+        border-bottom: 1px solid var(--border);
+        transition: background 0.15s;
+      }
+
+      tbody tr:hover {
+        background: rgba(192, 57, 43, 0.04);
+      }
+
+      tbody tr.selected-month {
+        background: rgba(30, 132, 73, 0.1) !important;
+        border-bottom-color: rgba(30, 132, 73, 0.25);
+      }
+
+      tbody tr.selected-month td {
+        color: var(--green-light);
+        font-weight: 600;
+      }
+      tbody tr.selected-month td:first-child {
+        color: var(--green);
+      }
+
+      tbody td {
+        padding: 8px 10px;
+        font-size: 0.8rem;
+        color: var(--text);
+        vertical-align: middle;
+      }
+
+      tbody td:first-child {
+        font-weight: 600;
+        white-space: nowrap;
+        color: var(--text2);
+        min-width: 120px;
+        position: sticky;
+        left: 0;
+        z-index: 5;
+        background: inherit; /* Păstrează culoarea rândului la hover */
+        border-right: 1px solid var(--border); /* Linia subțire de demarcare */
+      }
+
+      tbody td:not(:first-child) {
+        text-align: right;
+      }
+
+      .td-ipc-lunar {
+        color: var(--red-light) !important;
+        font-family: "DM Mono", monospace;
+        font-size: 0.75rem;
+        border-right: 1px dashed var(--border);
+        width: 85px;
+        min-width: 85px;
+        padding: 8px 10px !important; /* Ajustat pentru a se alinia cu header-ul */
+        text-align: left !important; /* Forțează alinierea la stânga a conținutului celulei */
+      }
+
+      .td-ipc-cumul {
+        color: var(--blue) !important;
+        font-family: "DM Mono", monospace;
+        font-size: 0.75rem;
+        font-weight: 600;
+        background: rgba(41, 128, 185, 0.04);
+        border-right: 2px solid rgba(41, 128, 185, 0.2);
+        width: 95px; /* Lățime fixă mai mică */
+      }
+
+      .td-ipc-cumul.no-ipc {
+        color: var(--text3) !important;
+        font-weight: 400;
+        background: transparent;
+      }
+
+      input.cell-input {
+        border: none;
+        background: transparent;
+        font-family: "DM Mono", monospace;
+        font-size: 0.8rem;
+        color: var(--text);
+        text-align: right;
+        width: 100%;
+        min-width: 60px;
+        padding: 2px 4px;
+        border-radius: 4px;
+        transition:
+          background 0.15s,
+          box-shadow 0.15s;
+      }
+
+      input.cell-input:focus {
+        outline: none;
+        background: rgba(192, 57, 43, 0.08);
+        box-shadow: 0 0 0 2px rgba(192, 57, 43, 0.3);
+      }
+
+      .indexed-val {
+        font-family: "DM Mono", monospace;
+        font-size: 0.8rem;
+        color: var(--text3);
+      }
+
+      .indexed-val.has-value {
+        color: var(--text);
+        font-weight: 600;
+      }
+
+      .year-divider td {
+        background: var(--red) !important;
+        color: white !important;
+        font-weight: 700 !important;
+        font-size: 0.72rem !important;
+        text-align: center !important;
+        padding: 5px 12px !important;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        position: sticky;
+        left: 0;
+        z-index: 6;
+      }
+
+      .badge-best {
+        display: inline-block;
+        background: var(--green);
+        color: white;
+        border-radius: 4px;
+        padding: 1px 5px;
+        font-size: 0.62rem;
+        font-weight: 700;
+        margin-left: 6px;
+        vertical-align: middle;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+      }
+
+      .info-tip {
+        font-size: 0.7rem;
+        color: var(--text3);
+        padding: 10px 20px;
+        border-top: 1px solid var(--border);
+        font-style: italic;
+        line-height: 1.5;
+      }
+
+      .scroll-hint {
+        text-align: center;
+        font-size: 0.68rem;
+        color: var(--text3);
+        padding: 8px;
+        display: none;
+      }
+      @media (max-width: 600px) {
+        .scroll-hint {
+          display: block;
+        }
+      }
+
+      .fab-calc {
+        display: none;
+        position: fixed;
+        bottom: 24px;
+        right: 20px;
+        z-index: 200;
+        background: var(--green);
+        color: white;
+        border: none;
+        border-radius: 50px;
+        padding: 14px 22px;
+        font-family: "DM Sans", sans-serif;
+        font-size: 0.88rem;
+        font-weight: 700;
+        cursor: pointer;
+        box-shadow: 0 6px 24px rgba(30, 132, 73, 0.45);
+        transition:
+          transform 0.15s,
+          background 0.2s;
+      }
+      .fab-calc:active {
+        transform: scale(0.95);
+      }
+      @media (max-width: 700px) {
+        .fab-calc {
+          display: block;
+        }
+      }
+
+      /* Modal */
+      .modal-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.45);
+        z-index: 300;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+      }
+      .modal-overlay.open {
+        display: flex;
+      }
+
+      .modal {
+        background: var(--surface);
+        border-radius: 18px;
+        padding: 26px 24px 22px;
+        width: 100%;
+        max-width: 400px;
+        box-shadow: var(--shadow-lg);
+        border: 1px solid var(--border);
+      }
+
+      .modal h3 {
+        font-size: 1rem;
+        font-weight: 700;
+        color: var(--text);
+        margin-bottom: 6px;
+      }
+
+      .modal p.modal-sub {
+        font-size: 0.78rem;
+        color: var(--text3);
+        margin-bottom: 16px;
+      }
+
+      .modal label {
+        font-size: 0.78rem;
+        font-weight: 600;
+        color: var(--text2);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        display: block;
+        margin-bottom: 6px;
+      }
+
+      .modal input[type="text"] {
+        width: 100%;
+        padding: 11px 14px;
+        border-radius: 10px;
+        border: 2px solid var(--border);
+        font-family: "DM Sans", sans-serif;
+        font-size: 0.95rem;
+        color: var(--text);
+        background: var(--bg);
+        margin-bottom: 16px;
+        transition: border-color 0.2s;
+      }
+
+      .modal input[type="text"]:focus {
+        outline: none;
+        border-color: var(--blue-light);
+        background: white;
+      }
+
+      .modal-actions {
+        display: flex;
+        gap: 10px;
+        justify-content: flex-end;
+      }
+
+      .btn-modal {
+        padding: 10px 20px;
+        border-radius: 10px;
+        border: none;
+        font-family: "DM Sans", sans-serif;
+        font-size: 0.88rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: background 0.2s;
+      }
+
+      .btn-modal-cancel {
+        background: var(--surface2);
+        color: var(--text2);
+      }
+      .btn-modal-cancel:hover {
+        background: var(--border);
+      }
+      .btn-modal-confirm {
+        background: var(--blue-light);
+        color: white;
+      }
+      .btn-modal-confirm:hover {
+        background: var(--blue);
+      }
+
+      /* IPC info box */
+      .ipc-ref-box {
+        background: rgba(41, 128, 185, 0.07);
+        border: 1px solid rgba(41, 128, 185, 0.2);
+        border-radius: 10px;
+        padding: 10px 14px;
+        margin-bottom: 16px;
+        font-size: 0.75rem;
+        color: var(--blue);
+        line-height: 1.5;
+      }
+      .ipc-ref-box strong {
+        font-weight: 700;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>📊 Calculator Pensie</h1>
+    </header>
+
+    <div class="container">
+      <!-- Controls -->
+      <div class="controls">
+        <h2>⚙️ Parametri calcul</h2>
+        <div class="controls-grid">
+          <div class="field-group">
+            <label>Număr luni bază de calcul</label>
+            <input
+              type="number"
+              id="numLuni"
+              value="16"
+              min="1"
+              max="60"
+              placeholder="ex: 16"
+            />
+          </div>
+          <div class="field-group">
+            <label>Procent pensie (%)</label>
+            <input
+              type="number"
+              id="procent"
+              value="58.5"
+              step="0.01"
+              min="0"
+              max="100"
+              placeholder="58.5"
+            />
+          </div>
+        </div>
+        <button class="btn-calc" onclick="calculeaza()">
+          🔢 Calculează Pensia
+        </button>
+      </div>
+
+      <!-- Profile / Storage panel -->
+      <div class="profile-panel">
+        <h2>💾 Profiluri salvate</h2>
+
+        <div id="activeProfileBar" class="active-profile-bar"></div>
+
+        <!-- Save section -->
+        <div class="profile-save-row">
+          <input
+            type="text"
+            id="profileNameInput"
+            placeholder="Nume profil (ex: Ion Popescu)"
+            maxlength="60"
+            onkeydown="if (event.key === 'Enter') openSaveModal();"
+          />
+          <button class="btn-profile btn-save" onclick="openSaveModal()">
+            💾 Salvează date inscrise
+          </button>
+        </div>
+
+        <hr class="profile-divider" />
+
+        <!-- Load section -->
+        <div class="profile-load-row">
+          <select id="profileSelect">
+            <option value="">— Selectați un profil salvat —</option>
+          </select>
+          <button class="btn-profile btn-load" onclick="incarcaProfil()">
+            📂 Încarcă
+          </button>
+          <button
+            class="btn-profile btn-delete-profile"
+            title="Șterge profilul selectat"
+            onclick="stergeProfil()"
+          >
+            🗑
+          </button>
+        </div>
+
+        <div id="profileStatus" class="profile-status"></div>
+      </div>
+
+      <!-- Results -->
+      <div class="results" id="results">
+        <h2>✅ Rezultate calcul</h2>
+        <div class="result-steps">
+          <div class="step-card">
+            <div class="step-label">
+              Pasul 4 — Perioadă selectată (luni consecutive cu medie maximă a
+              salariului indexat)
+            </div>
+            <div class="step-value" id="res-perioada">—</div>
+            <div class="step-sub" id="res-suma">—</div>
+          </div>
+          <div class="step-card green">
+            <div class="step-label">
+              Pasul 5 — Baza de calcul (suma ÷ nr. luni)
+            </div>
+            <div class="step-value" id="res-baza">—</div>
+            <div class="step-sub" id="res-formula">—</div>
+          </div>
+          <div class="pensie-neta">
+            <div class="label">Pensie Netă</div>
+            <div class="value" id="res-pensie">—</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Table -->
+      <div class="table-section">
+        <div class="table-header">
+          <h2>📋 Tabel Salarii & Indici IPC</h2>
+          <div class="table-actions">
+            <button class="btn-sm" onclick="stergeToateSalariile()">
+              🗑 Șterge salarii
+            </button>
+          </div>
+        </div>
+        <div class="scroll-hint">← Glisați tabelul orizontal →</div>
+        <div class="table-wrap">
+          <table id="mainTable">
+            <thead>
+              <tr>
+                <th rowspan="2" style="vertical-align: bottom">Luna</th>
+                <th
+                  style="
+                    text-align: center;
+                    border-bottom: 1px solid var(--border);
+                    padding-bottom: 4px;
+                  "
+                  colspan="2"
+                >
+                  Indice Prețuri Consum (IPC) — sursa INS
+                </th>
+                <th rowspan="2" style="vertical-align: bottom">
+                  Total Brut<br />Realizat (lei)
+                </th>
+                <th rowspan="2" style="vertical-align: bottom">
+                  Salariu Indexat<br />(lei)
+                </th>
+              </tr>
+              <tr class="th-group">
+                <th style="width: 85px">
+                  IPC Lunar<br />(L/L-1, %)<br /><span
+                    style="font-weight: 400; color: var(--red-light)"
+                    >editabil</span
+                  >
+                </th>
+                <th style="width: 95px">
+                  IPC Cumulat<br />(față de azi)<br /><span
+                    style="font-weight: 400; color: var(--blue)"
+                    >auto-calculat</span
+                  >
+                </th>
+              </tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+          </table>
+        </div>
+        <div class="info-tip">
+          💡 <strong>IPC Lunar</strong> = indicele lunar publicat de INS (L față
+          de L-1), pre-completat din datele INS până în mart. 2026. Se poate
+          edita și completa manual pentru lunile viitoare, pe măsura publicării
+          de INS.<br />
+          📐 <strong>IPC Cumulat</strong> = produsul în lanț al tuturor
+          indicilor lunari de la luna respectivă până la ultima lună cu IPC
+          disponibil (data interogării) — acesta este factorul corect de
+          actualizare conform Legii 223/2015 și normelor MAI.<br />
+          💰 <strong>Salariu Indexat</strong> = Total Brut Realizat × IPC
+          Cumulat (împărțit la 100).
+        </div>
+      </div>
+    </div>
+
+    <button class="fab-calc" onclick="calculeaza()">🔢 Calculează</button>
+
+    <!-- Save Modal -->
+    <div
+      class="modal-overlay"
+      id="saveModal"
+      onclick="if (event.target === this) closeSaveModal();"
+    >
+      <div class="modal">
+        <h3>💾 Salvare date inscrise</h3>
+        <p class="modal-sub">
+          Introduceți un nume de profil pentru a identifica datele salvate.
+        </p>
+        <label for="modalProfileName">Nume profil</label>
+        <input
+          type="text"
+          id="modalProfileName"
+          placeholder="ex: Ion Popescu"
+          maxlength="60"
+          onkeydown="if (event.key === 'Enter') confirmSave();"
+        />
+        <div class="modal-actions">
+          <button class="btn-modal btn-modal-cancel" onclick="closeSaveModal()">
+            Anulează
+          </button>
+          <button class="btn-modal btn-modal-confirm" onclick="confirmSave()">
+            Salvează
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // ═══════════════════════════════════════════════════════════════
+      // IPC LUNAR DATE — sursa INS Romania (L față de L-1, %)
+      // Pre-completate conform comunicatelor de presă INS.
+      // Adăugați manual lunile viitoare la apariția comunicatelor INS.
+      // ═══════════════════════════════════════════════════════════════
+      const IPC_LUNAR_DATA = {
+        "2024-01": 100.3,
+        "2024-02": 100.81,
+        "2024-03": 100.2,
+        "2024-04": 100.07,
+        "2024-05": 100.46,
+        "2024-06": 100.3,
+        "2024-07": 100.58,
+        "2024-08": 100.53,
+        "2024-09": 100.8,
+        "2024-10": 100.73,
+        "2024-11": 100.67,
+        "2024-12": 100.44,
+        "2025-01": 100.92,
+        "2025-02": 100.88,
+        "2025-03": 100.5,
+        "2025-04": 100.35,
+        "2025-05": 100.46,
+        "2025-06": 100.45,
+        "2025-07": 102.68,
+        "2025-08": 100.4,
+        "2025-09": 100.36,
+        "2025-10": 100.3,
+        "2025-11": 100.2,
+        "2025-12": 100.22,
+        "2026-01": 100.86,
+        "2026-02": 100.7,
+        "2026-03": 100.65,
+        // Adăugați aici lunile viitoare după publicare INS:
+        // '2026-04': 100.xx,
+      };
+
+      const LUNI_RO = [
+        "ianuarie",
+        "februarie",
+        "martie",
+        "aprilie",
+        "mai",
+        "iunie",
+        "iulie",
+        "august",
+        "septembrie",
+        "octombrie",
+        "noiembrie",
+        "decembrie",
+      ];
+
+      const LS_KEY_PREFIX = "pensie_profil_";
+      const LS_KEY_LAST = "pensie_lastProfile";
+
+      // ─────────────────────────────────────────────────────
+      // GENERATE MONTHS 2024-01 → 2030-12
+      // ─────────────────────────────────────────────────────
+      function genereazaLuni() {
+        const luni = [];
+        for (let an = 2024; an <= 2030; an++)
+          for (let l = 1; l <= 12; l++)
+            luni.push(`${an}-${String(l).padStart(2, "0")}`);
+        return luni;
+      }
+
+      const TOATE_LUNILE = genereazaLuni();
+      const brutValues = {};
+      const ipcLunarValues = {}; // IPC lunar (L/L-1) pentru fiecare lună — editabil
+      let activeProfileName = null;
+
+      // ═══════════════════════════════════════════════════════════════
+      // IPC CUMULAT — produs în lanț (conform reguli.txt și Legea 223)
+      //
+      // Logică: pentru luna X, IPC cumulat față de "data interogării"
+      // = produsul coeficienților IPC lunari din luna X+1 până la
+      // ultima lună pentru care există IPC în tabel.
+      //
+      // Exemplu: salariul din ian-2025, ultima lună cu IPC = mart-2026:
+      //   IPC_cumul(ian-2025) = IPC(feb-2025) × IPC(mar-2025) × ... × IPC(mar-2026)
+      //   Toți împărțiți la 100 => coeficienți zecimali, rezultat ×100 pentru %
+      //
+      // Luna curentă (ultima cu IPC) are IPC cumulat = 100.0000 (factor 1)
+      // ═══════════════════════════════════════════════════════════════
+
+      // Returnează sortată lista de chei cu IPC lunar disponibil
+      function getKeysWithIpc() {
+        return TOATE_LUNILE.filter((k) => {
+          const v = ipcLunarValues[k];
+          return v !== "" && v !== undefined && !isNaN(v) && v > 0;
+        });
+      }
+
+      // Calculează IPC cumulat pentru toate lunile și returnează un map key→ipcCumulat(%)
+      function calcIpcCumulat() {
+        const keysWithIpc = getKeysWithIpc();
+        const result = {};
+
+        if (keysWithIpc.length === 0) return result;
+
+        // Ultima lună cu IPC = luna de referință (simulează "data interogării")
+        const lastKey = keysWithIpc[keysWithIpc.length - 1];
+
+        // Construim array de indici pentru toate lunile din TOATE_LUNILE care au IPC
+        // Indexul fiecărei chei în TOATE_LUNILE
+        const keyIndex = {};
+        TOATE_LUNILE.forEach((k, i) => {
+          keyIndex[k] = i;
+        });
+
+        const lastIdx = keyIndex[lastKey];
+
+        // Pentru fiecare lună cu IPC, calculăm produsul cumulat
+        // din luna URMĂTOARE ei până la lastKey (inclusiv)
+        keysWithIpc.forEach((key) => {
+          const idx = keyIndex[key];
+
+          if (idx === lastIdx) {
+            // Ultima lună cu IPC: factor cumulat = 1 (100%)
+            result[key] = 100.0;
+            return;
+          }
+
+          // Produsul coeficienților din luna idx+1 până la lastIdx (inclusiv)
+          let prod = 1.0;
+          for (let i = idx + 1; i <= lastIdx; i++) {
+            const k = TOATE_LUNILE[i];
+            const v = ipcLunarValues[k];
+            if (v !== "" && v !== undefined && !isNaN(v) && v > 0) {
+              prod *= v / 100.0;
+            }
+            // Dacă o lună intermediară nu are IPC, o sărim (lanțul rămâne incomplet)
+          }
+          // Întoarcem ca procent (×100)
+          result[key] = parseFloat((prod * 100).toFixed(6));
+        });
+
+        // Lunile fără IPC nu primesc valoare
+        return result;
+      }
+
+      // Map global care se recalculează la orice modificare IPC lunar
+      let ipcCumulatMap = {};
+
+      function recalcToateCumulate() {
+        ipcCumulatMap = calcIpcCumulat();
+        // Actualizează afișarea IPC cumulat și salariu indexat pentru toate lunile
+        TOATE_LUNILE.forEach((key) => {
+          updateCumulCell(key);
+          recalcIndexat(key);
+        });
+      }
+
+      function updateCumulCell(key) {
+        const cell = document.getElementById(`cumul-${key}`);
+        if (!cell) return;
+        const val = ipcCumulatMap[key];
+        if (val !== undefined) {
+          cell.textContent = val.toFixed(4) + "%";
+          cell.classList.remove("no-ipc");
+        } else {
+          cell.textContent = "—";
+          cell.classList.add("no-ipc");
+        }
+      }
+
+      // ─────────────────────────────────────────────────────
+      // BUILD TABLE
+      // ─────────────────────────────────────────────────────
+      function buildTable() {
+        const tbody = document.getElementById("tableBody");
+        tbody.innerHTML = "";
+        let currentYear = null;
+
+        TOATE_LUNILE.forEach((key) => {
+          const [an, luna] = key.split("-");
+          const anInt = parseInt(an);
+          const lunaInt = parseInt(luna);
+
+          if (anInt !== currentYear) {
+            currentYear = anInt;
+            const divRow = document.createElement("tr");
+            divRow.className = "year-divider";
+            divRow.innerHTML = `<td colspan="5">— ${anInt} —</td>`;
+            tbody.appendChild(divRow);
+          }
+
+          const row = document.createElement("tr");
+          row.id = `row-${key}`;
+
+          const ipcDefault =
+            IPC_LUNAR_DATA[key] !== undefined ? IPC_LUNAR_DATA[key] : "";
+          ipcLunarValues[key] = ipcDefault !== "" ? ipcDefault : "";
+
+          const lunaLabel = `${anInt} — ${LUNI_RO[lunaInt - 1]}`;
+
+          row.innerHTML = `
+      <td>${lunaLabel}</td>
+  <td class="td-ipc-lunar">
+    <input class="cell-input" type="number" step="0.01" id="ipc-${key}"
+      value="${ipcDefault !== "" ? ipcDefault : ""}"
+      placeholder="—"
+      onchange="onIpcLunarChange('${key}', this.value)"
+      oninput="onIpcLunarChange('${key}', this.value)">
+  </td>
+  <td class="td-ipc-cumul no-ipc" id="cumul-${key}">—</td>
+      <td>
+        <input class="cell-input" type="number" step="1" id="brut-${key}"
+          value=""
+          placeholder="—"
+          onchange="onBrutChange('${key}', this.value)"
+          oninput="onBrutChange('${key}', this.value)">
+      </td>
+      <td>
+        <span class="indexed-val" id="idx-${key}">—</span>
+      </td>
+    `;
+
+          tbody.appendChild(row);
+        });
+
+        // Calculează IPC cumulat inițial după ce toate rândurile sunt create
+        recalcToateCumulate();
+      }
+
+      // ─────────────────────────────────────────────────────
+      // CELL HANDLERS
+      // ─────────────────────────────────────────────────────
+      function onIpcLunarChange(key, val) {
+        const v = parseFloat(val);
+        ipcLunarValues[key] = isNaN(v) ? "" : v;
+        // Orice modificare IPC lunar recalculează TOATE cumulatele și indexările
+        recalcToateCumulate();
+      }
+
+      function onBrutChange(key, val) {
+        const v = parseFloat(val);
+        brutValues[key] = isNaN(v) ? "" : v;
+        recalcIndexat(key);
+      }
+
+      // Recalculează salariul indexat pentru o singură lună
+      // folosind IPC Cumulat (produsul în lanț) — nu IPC lunar individual
+      function recalcIndexat(key) {
+        const brut = brutValues[key];
+        const ipcC = ipcCumulatMap[key]; // IPC cumulat în % (ex: 108.52)
+        const span = document.getElementById(`idx-${key}`);
+        if (!span) return;
+
+        if (
+          brut !== undefined &&
+          brut !== "" &&
+          !isNaN(brut) &&
+          ipcC !== undefined &&
+          !isNaN(ipcC)
+        ) {
+          const indexed = brut * (ipcC / 100.0);
+          span.textContent = formatNum(indexed);
+          span.classList.add("has-value");
+          span.dataset.val = indexed;
+        } else {
+          span.textContent = "—";
+          span.classList.remove("has-value");
+          delete span.dataset.val;
+        }
+      }
+
+      function formatNum(v) {
+        return v.toLocaleString("ro-RO", {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 4,
+        });
+      }
+
+      function formatKey(key) {
+        const [an, l] = key.split("-");
+        return `${LUNI_RO[parseInt(l) - 1]} ${an}`;
+      }
+
+      // ─────────────────────────────────────────────────────
+      // CALCULATE
+      // ─────────────────────────────────────────────────────
+      function getIndexedValues() {
+        return TOATE_LUNILE.map((key) => {
+          const span = document.getElementById(`idx-${key}`);
+          if (span && span.dataset.val)
+            return { key, val: parseFloat(span.dataset.val) };
+          return null;
+        }).filter(Boolean);
+      }
+
+      function calculeaza() {
+        const nLuni = parseInt(document.getElementById("numLuni").value) || 16;
+        const procent =
+          parseFloat(document.getElementById("procent").value) || 58.5;
+        const indexed = getIndexedValues();
+
+        if (indexed.length < nLuni) {
+          alert(
+            `Aveți doar ${indexed.length} luni cu date complete. Introduceți cel puțin ${nLuni} luni.`,
+          );
+          return;
+        }
+
+        const subset = indexed.slice(-60);
+        if (subset.length < nLuni) {
+          alert(`Nu există suficiente luni cu date în ultimele 60 de luni.`);
+          return;
+        }
+
+        let bestSum = -Infinity,
+          bestStart = 0;
+        for (let i = 0; i <= subset.length - nLuni; i++) {
+          let sum = 0;
+          for (let j = i; j < i + nLuni; j++) sum += subset[j].val;
+          if (sum > bestSum) {
+            bestSum = sum;
+            bestStart = i;
+          }
+        }
+
+        const selectedMonths = subset.slice(bestStart, bestStart + nLuni);
+        const suma = selectedMonths.reduce((a, b) => a + b.val, 0);
+        const baza = suma / nLuni;
+        const pensie = baza * (procent / 100);
+
+        document
+          .querySelectorAll("tbody tr")
+          .forEach((r) => r.classList.remove("selected-month"));
+        document.querySelectorAll(".badge-best").forEach((b) => b.remove());
+
+        selectedMonths.forEach((m) => {
+          const row = document.getElementById(`row-${m.key}`);
+          if (row) {
+            row.classList.add("selected-month");
+            const firstTd = row.querySelector("td");
+            if (firstTd && !firstTd.querySelector(".badge-best")) {
+              const badge = document.createElement("span");
+              badge.className = "badge-best";
+              badge.textContent = "✓";
+              firstTd.appendChild(badge);
+            }
+          }
+        });
+
+        const firstRow = document.getElementById(
+          `row-${selectedMonths[0].key}`,
+        );
+        if (firstRow)
+          firstRow.scrollIntoView({ behavior: "smooth", block: "center" });
+
+        const primaLuna = selectedMonths[0].key;
+        const ultimaLuna = selectedMonths[selectedMonths.length - 1].key;
+
+        // Info despre luna de referință IPC
+        const keysWithIpc = getKeysWithIpc();
+        const lunaRefIpc =
+          keysWithIpc.length > 0
+            ? ` · Referință IPC: ${formatKey(keysWithIpc[keysWithIpc.length - 1])}`
+            : "";
+
+        document.getElementById("res-perioada").innerHTML =
+          `${formatKey(primaLuna)} → ${formatKey(ultimaLuna)} <span class="period-tag">${nLuni} luni consecutive${lunaRefIpc}</span>`;
+        document.getElementById("res-suma").textContent =
+          `Suma salarii indexate (cumulate IPC): ${formatNum(suma)} lei`;
+        document.getElementById("res-baza").textContent =
+          `${formatNum(baza)} lei`;
+        document.getElementById("res-formula").textContent =
+          `${formatNum(suma)} ÷ ${nLuni} = ${formatNum(baza)}`;
+        document.getElementById("res-pensie").textContent =
+          `${formatNum(pensie)} lei`;
+
+        const resultsEl = document.getElementById("results");
+        resultsEl.classList.add("visible");
+        resultsEl.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+
+      // ─────────────────────────────────────────────────────
+      // CLEAR TABLE
+      // ─────────────────────────────────────────────────────
+      function stergeToateSalariile() {
+        if (!confirm("Ștergeți toate salariile brute introduse?")) return;
+        TOATE_LUNILE.forEach((key) => {
+          const inp = document.getElementById(`brut-${key}`);
+          if (inp) inp.value = "";
+          delete brutValues[key];
+          recalcIndexat(key);
+          const row = document.getElementById(`row-${key}`);
+          if (row) row.classList.remove("selected-month");
+        });
+        document.querySelectorAll(".badge-best").forEach((b) => b.remove());
+        document.getElementById("results").classList.remove("visible");
+        activeProfileName = null;
+        updateActiveBar();
+      }
+
+      // ─────────────────────────────────────────────────────
+      // LOCAL STORAGE — PROFILES
+      // ─────────────────────────────────────────────────────
+      function getAllProfileNames() {
+        const names = [];
+        for (let i = 0; i < localStorage.length; i++) {
+          const k = localStorage.key(i);
+          if (k && k.startsWith(LS_KEY_PREFIX))
+            names.push(k.slice(LS_KEY_PREFIX.length));
+        }
+        return names.sort((a, b) => a.localeCompare(b, "ro"));
+      }
+
+      function refreshProfileSelect(selectValue) {
+        const sel = document.getElementById("profileSelect");
+        const names = getAllProfileNames();
+        sel.innerHTML =
+          '<option value="">— Selectați un profil salvat —</option>';
+        names.forEach((name) => {
+          const opt = document.createElement("option");
+          opt.value = name;
+          opt.textContent = name;
+          sel.appendChild(opt);
+        });
+        if (selectValue) sel.value = selectValue;
+      }
+
+      function getBrutSnapshot() {
+        const snap = {};
+        TOATE_LUNILE.forEach((key) => {
+          if (brutValues[key] !== undefined && brutValues[key] !== "")
+            snap[key] = brutValues[key];
+        });
+        return snap;
+      }
+
+      function applyBrutSnapshot(snap) {
+        TOATE_LUNILE.forEach((key) => {
+          const inp = document.getElementById(`brut-${key}`);
+          if (inp) inp.value = "";
+          delete brutValues[key];
+          recalcIndexat(key);
+        });
+        Object.entries(snap).forEach(([key, val]) => {
+          brutValues[key] = val;
+          const inp = document.getElementById(`brut-${key}`);
+          if (inp) inp.value = val;
+          recalcIndexat(key);
+        });
+      }
+
+      function showStatus(msg, type) {
+        const el = document.getElementById("profileStatus");
+        el.textContent = msg;
+        el.className = `profile-status ${type}`;
+        clearTimeout(el._timer);
+        el._timer = setTimeout(() => {
+          el.className = "profile-status";
+        }, 4000);
+      }
+
+      function updateActiveBar() {
+        const bar = document.getElementById("activeProfileBar");
+        if (activeProfileName) {
+          bar.textContent = `📁 Profil activ: ${activeProfileName}`;
+          bar.classList.add("visible");
+          document.getElementById("profileNameInput").value = activeProfileName;
+        } else {
+          bar.classList.remove("visible");
+          document.getElementById("profileNameInput").value = "";
+        }
+      }
+
+      // ── Save Modal ──────────────────────────────────────
+      function openSaveModal() {
+        const nameInField = document
+          .getElementById("profileNameInput")
+          .value.trim();
+        document.getElementById("modalProfileName").value =
+          nameInField || activeProfileName || "";
+        document.getElementById("saveModal").classList.add("open");
+        setTimeout(
+          () => document.getElementById("modalProfileName").focus(),
+          80,
+        );
+      }
+
+      function closeSaveModal() {
+        document.getElementById("saveModal").classList.remove("open");
+      }
+
+      function confirmSave() {
+        const name = document.getElementById("modalProfileName").value.trim();
+        if (!name) {
+          document.getElementById("modalProfileName").style.borderColor =
+            "var(--red)";
+          document.getElementById("modalProfileName").focus();
+          return;
+        }
+        document.getElementById("modalProfileName").style.borderColor = "";
+
+        const existing = getAllProfileNames().includes(name);
+        if (
+          existing &&
+          !confirm(`Profilul „${name}" există deja. Suprascrieți datele?`)
+        )
+          return;
+
+        const snap = getBrutSnapshot();
+        const payload = JSON.stringify({
+          brutValues: snap,
+          savedAt: new Date().toISOString(),
+        });
+
+        localStorage.setItem(LS_KEY_PREFIX + name, payload);
+        localStorage.setItem(LS_KEY_LAST, name);
+
+        activeProfileName = name;
+        updateActiveBar();
+        refreshProfileSelect(name);
+        closeSaveModal();
+
+        showStatus(
+          existing
+            ? `✅ Profilul „${name}" a fost actualizat.`
+            : `✅ Profilul „${name}" a fost salvat cu succes.`,
+          "ok",
+        );
+      }
+
+      // ── Load ────────────────────────────────────────────
+      function incarcaProfil() {
+        const sel = document.getElementById("profileSelect");
+        const name = sel.value;
+        if (!name) {
+          showStatus("⚠️ Selectați un profil din listă.", "err");
+          return;
+        }
+
+        const raw = localStorage.getItem(LS_KEY_PREFIX + name);
+        if (!raw) {
+          showStatus("⚠️ Profilul nu a fost găsit.", "err");
+          return;
+        }
+
+        try {
+          const data = JSON.parse(raw);
+          applyBrutSnapshot(data.brutValues || {});
+          activeProfileName = name;
+          localStorage.setItem(LS_KEY_LAST, name);
+          updateActiveBar();
+          document.getElementById("results").classList.remove("visible");
+          document.querySelectorAll(".badge-best").forEach((b) => b.remove());
+          document
+            .querySelectorAll("tbody tr")
+            .forEach((r) => r.classList.remove("selected-month"));
+          const savedAt = data.savedAt
+            ? new Date(data.savedAt).toLocaleString("ro-RO")
+            : "—";
+          showStatus(
+            `📂 Profil „${name}" încărcat (salvat: ${savedAt}).`,
+            "info",
+          );
+        } catch (e) {
+          showStatus("❌ Eroare la citirea profilului.", "err");
+        }
+      }
+
+      // ── Delete ──────────────────────────────────────────
+      function stergeProfil() {
+        const sel = document.getElementById("profileSelect");
+        const name = sel.value;
+        if (!name) {
+          showStatus("⚠️ Selectați un profil de șters.", "err");
+          return;
+        }
+        if (!confirm(`Ștergeți definitiv profilul „${name}"?`)) return;
+
+        localStorage.removeItem(LS_KEY_PREFIX + name);
+        if (activeProfileName === name) {
+          activeProfileName = null;
+          updateActiveBar();
+        }
+        refreshProfileSelect("");
+        showStatus(`🗑 Profilul „${name}" a fost șters.`, "info");
+      }
+
+      // ── Auto-load last profile on startup ──────────────
+      function autoLoadLastProfile() {
+        const lastName = localStorage.getItem(LS_KEY_LAST);
+        if (!lastName) return;
+        const raw = localStorage.getItem(LS_KEY_PREFIX + lastName);
+        if (!raw) return;
+        try {
+          const data = JSON.parse(raw);
+          applyBrutSnapshot(data.brutValues || {});
+          activeProfileName = lastName;
+          updateActiveBar();
+          refreshProfileSelect(lastName);
+          const savedAt = data.savedAt
+            ? new Date(data.savedAt).toLocaleString("ro-RO")
+            : "—";
+          showStatus(
+            `📂 Profil „${lastName}" încărcat automat (salvat: ${savedAt}).`,
+            "info",
+          );
+        } catch (e) {
+          /* ignore corrupt data */
+        }
+      }
+
+      // ─────────────────────────────────────────────────────
+      // INIT
+      // ─────────────────────────────────────────────────────
+      buildTable();
+      refreshProfileSelect("");
+      autoLoadLastProfile();
+    </script>
+  </body>
+</html>
